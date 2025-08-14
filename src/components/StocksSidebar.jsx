@@ -4,7 +4,7 @@ import { DUMMY_MARKET } from '../services/dummy'
 
 export default function StocksSidebar() {
   return (
-    <Card title="Acciones (dummy)">
+    <Card title="Stocks">
       <ul className="space-y-2 text-sm">
         {DUMMY_MARKET.map((s) => (
           <li key={s.symbol} className="flex justify-between border-t first:border-t-0 pt-1">

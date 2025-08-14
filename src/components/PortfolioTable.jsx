@@ -6,9 +6,9 @@ export default function PortfolioTable({ rows }) {
         <thead>
           <tr className="text-left text-neutral-500">
             <th className="py-2">Ticker</th>
-            <th className="py-2">Tipo</th>
-            <th className="py-2 text-right">Cantidad</th>
-            <th className="py-2 text-right">Precio Prom.</th>
+            <th className="py-2">Type</th>
+            <th className="py-2 text-right">Amount</th>
+            <th className="py-2 text-right">Avg. price</th>
           </tr>
         </thead>
         <tbody>

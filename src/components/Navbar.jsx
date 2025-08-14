@@ -10,13 +10,13 @@ export default function Navbar({ onNavigate, active }) {
               className={`px-3 py-1 rounded-full ${active === 'home' ? 'bg-black text-white' : 'hover:bg-neutral-100'}`}
               onClick={() => onNavigate('home')}
             >
-              Inicio
+              Home
             </button>
             <button
               className={`px-3 py-1 rounded-full ${active === 'portfolio' ? 'bg-black text-white' : 'hover:bg-neutral-100'}`}
               onClick={() => onNavigate('portfolio')}
             >
-              Portafolios
+              Portfolios
             </button>
           </nav>
         </div>

@@ -1,8 +1,8 @@
 
 export const DUMMY = {
   portfolios: [
-    { id: 1, name: 'Mi Portafolio' },
-    { id: 2, name: 'Crecimiento 60/40' },
+    { id: 1, name: 'My Portfolio' },
+    { id: 2, name: '60/40 Growth' },
   ],
   holdingsByPortfolio: {
     1: [
