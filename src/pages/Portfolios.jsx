@@ -31,10 +31,10 @@ export default function Portfolios() {
         ))}
       </div>
       <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr_1fr] gap-4">
-        <Card title="Mi Portafolio">
+        <Card title="My Portfolio">
           <PortfolioTable rows={rows} />
         </Card>
-        <Card title="Gráfica (dummy)">
+        <Card title="Graph (dummy)">
           <DonutChart series={series} />
         </Card>
         <StocksSidebar />

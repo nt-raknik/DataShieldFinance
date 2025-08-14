@@ -22,7 +22,7 @@ export default function AppRouter() {
         </Routes>
       </main>
       <footer className="max-w-6xl mx-auto px-4 py-6 text-xs text-neutral-500">
-        © DataShield Finance — Prototipo v0
+        © DataShield Finance version 0
       </footer>
     </div>
   )

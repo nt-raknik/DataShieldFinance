@@ -3,10 +3,10 @@ import Card from './Card'
 import { useMarketauxNews } from '../hooks/useMarketauxNews'
 
 export default function NewsWidget() {
-  const { loading, error, news } = useMarketauxNews({ countries: 'mx', language: 'es', limit: 6 })
+  const { loading, error, news } = useMarketauxNews({ countries: 'us', language: 'en', limit: 6 })
   return (
-    <Card title="Noticias Financieras de México 🇲🇽">
-      {loading && <p className="text-sm text-neutral-500">Cargando noticias...</p>}
+    <Card title="Financial News">
+      {loading && <p className="text-sm text-neutral-500">Loading news...</p>}
       {error && <p className="text-sm text-amber-700">{error}</p>}
       {!loading && (
         <ul className="space-y-2 text-sm">

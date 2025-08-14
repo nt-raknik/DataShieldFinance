@@ -3,7 +3,7 @@ export default function DonutChart({ series }) {
   const total = series.reduce((a, b) => a + b.value, 0)
   return (
     <div className="border rounded-xl p-4 text-sm">
-      <div className="mb-2 font-medium">Total posiciones: {total}</div>
+      <div className="mb-2 font-medium">Total positions: {total}</div>
       <ul className="space-y-1">
         {series.map((s, i) => (
           <li key={i} className="flex items-center gap-2">
