@@ -5,6 +5,7 @@ const { getAssetPerformance } = require("../services/performance");
 
 // 2. Consultar assets correspondientes a un portafolio
 router.get("/:portfolioId", async (req, res) => {
+  console.log("Fetching assets for portfolio:", req.params.portfolioId);
   const [rows] = await pool.query(
     `SELECT DISTINCT a.* 
      FROM transactions t

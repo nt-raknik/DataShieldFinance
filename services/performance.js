@@ -14,7 +14,9 @@ async function getAssetPerformance(portfolioId, assetId) {
   }
 
   // Obtener precios desde API externa
-  const { data } = await axios.get(`https://caramelo/default/cachedPriceData?ticker=${asset.symbol}`);
+  //https://c4rm9elh30.execute-api.us-east-1.amazonaws.com/default/cachedPriceData?ticker=TSLA
+  const { data } = await axios.get(`https://c4rm9elh30.execute-api.us-east-1.amazonaws.com/default/cachedPriceData?ticker=${asset.symbol}`);
+  
   const prices = data.price_data;
 
   // Calcular PnL acumulado día a día
