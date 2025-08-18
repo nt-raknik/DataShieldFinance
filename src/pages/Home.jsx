@@ -2,7 +2,7 @@
 import Card from '../components/Card'
 import NewsWidget from '../components/NewsWidget'
 import StocksSidebar from '../components/StocksSidebar'
-
+import Assets_req from '../components/Assets_req' // Assuming Assets_req is a component that fetches and displays assets  
 export default function Home() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr_1fr] gap-4">
@@ -13,6 +13,7 @@ export default function Home() {
       </Card>
       <NewsWidget />
       <StocksSidebar />
+      <Assets_req />
     </div>
   )
 }
