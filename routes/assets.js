@@ -2,6 +2,22 @@ const express = require("express");
 const router = express.Router();
 const pool = require("../db");
 const { getAssetPerformance } = require("../services/performance");
+const { noticias, marketNews } = require("../services/financial-data-client");
+
+// 2. Consultar assets correspondientes a un portafolio
+router.get("/noticias", async (req, res) => {
+
+  //Api de ERik
+  //console.log("Pruebas sobre las noticias de Erik");
+  //const data = await noticias();
+  //return res.json(data);
+  //return getNoticias.noticias();
+
+  //Api de Noel 
+  console.log("Pruebas sobre las noticias de Noel");
+  const data = await marketNews("general",{});
+  return res.json(data);
+});
 
 // 2. Consultar assets correspondientes a un portafolio
 router.get("/:portfolioId", async (req, res) => {
