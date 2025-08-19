@@ -1,9 +1,10 @@
-
 import Card from '../components/Card'
 import NewsWidget from '../components/NewsWidget'
 import StocksSidebar from '../components/StocksSidebar'
+import Assets_req from '../components/Assets_req'
 import * as React from 'react'
 import {Box, Button, Typography, Modal} from '@mui/material'
+
 const style = {
   position: 'absolute',
   top: '50%',
@@ -14,14 +15,13 @@ const style = {
 
 }
 
-
 export default function Home() {
   const [open, setOpen] = React.useState("")
   const handleOpen = (modelName) => setOpen(modelName)
   const handleClose = () => setOpen("")
   return (
     <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr_1fr] gap-4">
-      <Card title="Bienvenido(a)" right={<span className="text-xs text-neutral-500">Explore your portfolio</span>}>
+      <Card title="Welcome" right={<span className="text-xs text-neutral-500">Explore your portfolio</span>}>
         <p className="text-sm text-neutral-600">
           Go to <strong>Portfolios</strong> to review your positions. On the Home page, you'll find Mexican financial news and a dummy watchlist.
         </p>
@@ -97,6 +97,7 @@ export default function Home() {
       </Card>
       <NewsWidget />
       <StocksSidebar />
+      <Assets_req />
     </div>
   )
 }
