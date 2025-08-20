@@ -1,86 +1,15 @@
-//import Card from '../components/Card'
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import PortfolioTable from '../components/PortfolioTable'
-import DonutChart from '../components/DonutChart'
 import { DUMMY } from '../services/dummy'
 import StocksSidebar from '../components/StocksSidebar'
 import { useEffect, useMemo, useState, useRef } from 'react'
-import { Alert, Box, Button, CircularProgress, Container, Dialog, DialogActions, DialogTitle, DialogContent, Grid, Snackbar, TextField, Typography } from '@mui/material';
+import { Box, Button, CircularProgress, Container, Dialog, DialogActions, DialogTitle, DialogContent, Grid, Snackbar, TextField, Typography } from '@mui/material';
 import FolderDeleteIcon from '@mui/icons-material/FolderDelete';
 import CreateNewFolderIcon from '@mui/icons-material/CreateNewFolder';
-import { lightBlue, red } from '@mui/material/colors';
-import Assets_req from '../components/Assets_req' // Assuming Assets_req is a component that fetches and displays assets  
+import { red } from '@mui/material/colors';
 
-function CreatePortfolioDialog({ open, onClose, userId = 2, onCreated }) {
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!name.trim()) return;
-
-    try {
-      setLoading(true);
-      // Cambia a 'http://localhost:4000/api/portfolios' si NO usas proxy de Vite.
-      const res = await fetch("/api/portfolios", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          user_id: Number(userId),
-          name: name.trim(),
-          description: description.trim(),
-        }),
-      });
-      if (!res.ok) throw new Error(`API ${res.status}`);
-      onCreated?.();
-      setName("");
-      setDescription("");
-      onClose();
-    } catch (err) {
-      console.error(err);
-      onCreated?.(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <Dialog open={open} onClose={() => !loading && onClose()} fullWidth maxWidth="sm">
-      <DialogTitle>Crear portafolio</DialogTitle>
-      <form onSubmit={handleSubmit}>
-        <DialogContent>
-          <Box display="grid" gap={2}>
-            <TextField
-              label="Nombre"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              autoFocus
-              required
-            />
-            <TextField
-              label="Descripción"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              multiline
-              minRows={2}
-            />
-            <TextField label="User ID" type="number" value={userId} InputProps={{ readOnly: true }} />
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={onClose} disabled={loading}>
-            Cancelar
-          </Button>
-          <Button type="submit" variant="contained" disabled={loading} startIcon={!loading && <CreateNewFolderIcon />}>
-            {loading ? <CircularProgress size={22} /> : "Crear"}
-          </Button>
-        </DialogActions>
-      </form>
-    </Dialog>
-  );
-}
+import CreatePortfolioButton from "../components/createPortfolioButton";
 
 export default function Portfolios() {
   const [portfolios, setPortfolios] = useState([]);
@@ -88,25 +17,28 @@ export default function Portfolios() {
   const [error, setError] = useState(null);
   const [selected, setSelected] = useState(null);
 
-  //useEffect(() => {
-    //let alive = true;
+  const rows = DUMMY.holdingsByPortfolio[selected] ?? [];
 
-    /*const fetchPortfolios = async () => {
-      try {
-        const res = await fetch("/api/portfolios/user/2");
-        if (!res.ok) throw new Error(`API ${res.status}`);
-        const data = await res.json();
-        if (alive) {
-          setPortfolios(Array.isArray(data) ? data : []);
-          setLoading(false);
-        }
-      } catch (err) {
-        if (alive) {
-          setError(err.message || "Error");
-          setLoading(false);
-        }
-      }
-    };*/
+  const series = useMemo(() => {
+    const byType = rows.reduce((m, r) => {
+      m[r.type] = (m[r.type] || 0) + Number(r.quantity || 0);
+      return m;
+    }, {});
+    return Object.entries(byType).map(([label, value]) => ({ label, value }));
+  }, [rows]);
+
+  const [toast, setToast] = useState({ open: false, msg: "", severity: "success" });
+
+  const handleCreated = (err) => {
+  if (err) {
+    setToast({ open: true, msg: `Error creating portfolio: ${err.message}`, severity: "error" });
+  } else {
+    console.log("Refreshing portfolios")
+    setToast({ open: true, msg: "Portfolio created successfully", severity: "success" });
+    // Refresh portfolios list    
+    fetchPortfolios();
+  }
+};
 
     const fetchPortfolios = async () => {
     try {
@@ -123,45 +55,10 @@ export default function Portfolios() {
     }
   };
 
-    /*fetchPortfolios();
-    return () => { alive = false; };
-  }, []);*/
-
   // Initial load
   useEffect(() => {
     fetchPortfolios();
   }, []);
-
-   // Update the handleCreated function to refresh portfolios
-  const handleCreated = (err) => {
-    if (err) {
-      setToast({ open: true, msg: `Error al crear: ${err.message}`, severity: "error" });
-    } else {
-      setToast({ open: true, msg: "Portafolio creado", severity: "success" });
-      // Refresh portfolios list
-      fetchPortfolios();
-    }
-  };
-
-  
-  //const rows = DUMMY.holdingsByPortfolio[selected] ?? []
-  /*const series = useMemo(() => {
-    const byType = rows.reduce((m, r) => {
-      m[r.type] = (m[r.type] || 0) + Number(r.quantity || 0)
-      return m
-    }, {})
-    return Object.entries(byType).map(([label, value]) => ({ label, value }))
-  }, [rows])*/
-
-   const series = useMemo(() => {
-    // We'll update this once we have the holdings data
-    const holdings = []  // This will come from the API
-    const byType = holdings.reduce((m, r) => {
-      m[r.type] = (m[r.type] || 0) + Number(r.quantity || 0)
-      return m
-    }, {})
-    return Object.entries(byType).map(([label, value]) => ({ label, value }))
-  }, [selected])  // Update dependency to selected
 
   // Flowbite Chart.js integration with real-time emulation
   const chartRef = useRef(null)
@@ -221,19 +118,6 @@ export default function Portfolios() {
     }
   }, [series])
 
-  // UI estado para crear
-    const [openCreate, setOpenCreate] = useState(false);
-    const [toast, setToast] = useState({ open: false, msg: "", severity: "success" });
-  
-    /*const handleCreated = (err) => {
-      if (err) {
-        setToast({ open: true, msg: `Error al crear: ${err.message}`, severity: "error" });
-      } else {
-        setToast({ open: true, msg: "Portafolio creado", severity: "success" });
-        // TODO: aquí puedes hacer re-fetch de portfolios reales cuando los conectes a la API
-      }
-    };*/
-
   return (
     <Container disableGutters>
       {loading ? (
@@ -268,40 +152,22 @@ export default function Portfolios() {
         </Grid>
         
         {/* Add and Delete buttons */}
-        <Grid item>
-          <Button 
-            variant="outlined" 
-            size="small" 
-            startIcon={<CreateNewFolderIcon />}
-            sx={{ 
-              borderRadius: '20px',
-              mr: 1,
-              color: '#00674F',
-              borderColor: '#00674F',
-              '&:hover': { 
-                backgroundColor: '#e6f7f2',
-                borderColor: '#00674F'
-              }
-            }}
-            //onClick={() => alert('Add portfolio functionality')}
-            onClick={() => setOpenCreate(true)}
-          >
-            Add
-          </Button>
+        <Grid item>          
+          <CreatePortfolioButton userId={2} onCreated={handleCreated} />
         </Grid>
-        <Grid item>
-          <Button 
-            variant="outlined" 
-            size="small" 
+        <Grid item>          
+          <Button
+            variant="contained"
+            color="secondary"
             startIcon={<FolderDeleteIcon />}
-            sx={{ 
-              borderRadius: '20px',
-              color: red[700],
-              borderColor: red[700],
-              '&:hover': { 
-                backgroundColor: '#ffebee', 
-                borderColor: red[700]
-              }
+            sx={{
+              bgcolor: "#FA2323",
+              ":hover": { bgcolor: "#CD0404" },
+              transition: "transform 120ms ease, box-shadow 120ms ease, background-color 120ms ease",
+              transform: "translateZ(0)",
+              willChange: "transform",
+              "&:hover": { transform: "translateY(-1px)" },
+              "&:active": { transform: "translateY(0px) scale(0.98)" }
             }}
             disabled={!selected}
             onClick={() => {
@@ -314,16 +180,7 @@ export default function Portfolios() {
           </Button>
         </Grid>
       </Grid>
-    )}
-      {/*{DUMMY.portfolios.map((p) => (
-            <button
-              key={p.id}
-              onClick={() => setSelected(p.id)}
-              className={`px-3 py-1 rounded-full border ${selected === p.id ? 'bg-black text-white' : 'hover:bg-neutral-100'}`}
-            >
-              {p.name}
-            </button>
-          ))}*/}
+    )}      
       <Grid container>
         <Grid size={4} spacing={2}>
           <Card sx={{p:2, bgcolor: "#00674F", color: "#FFFFFF"}}>
@@ -359,7 +216,6 @@ export default function Portfolios() {
         </Grid>        
         <Grid size={4}>
           <Card title="Graph (dummy)">
-            {/* Flowbite Chart.js Doughnut Chart */}
             <div className="mt-6 bg-white rounded-lg shadow p-4 flex flex-col items-center w-full">
               <h3 className="text-lg font-semibold mb-4">Portfolio Allocation</h3>
               <canvas ref={chartRef} className="w-full max-w-xs" />
@@ -368,30 +224,8 @@ export default function Portfolios() {
         </Grid>
         <Grid size={4}>        
           <StocksSidebar />
-      {/*</div>*/}        
         </Grid>   
-        </Grid>     
-        {/* Add the table here */}      
-        {/* Dialog crear */}
-              <CreatePortfolioDialog
-                open={openCreate}
-                onClose={() => setOpenCreate(false)}
-                userId={2}
-                onCreated={handleCreated}
-              />
-        
-              {/* Toast */}
-              <Snackbar
-                open={toast.open}
-                autoHideDuration={3000}
-                onClose={() => setToast((t) => ({ ...t, open: false }))}
-                anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-              >
-                <Alert severity={toast.severity} variant="filled">
-                  {toast.msg}
-                </Alert>
-              </Snackbar>                                    
+      </Grid>             
     </Container>      
-    //</div>
   )
 }
