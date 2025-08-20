@@ -1,9 +1,13 @@
-import { useState } from "react";
+import { useState, forwardRef } from "react";
 import {
   Button, Dialog, DialogTitle, DialogContent, DialogActions,
-  TextField, Stack, IconButton, Tooltip, Snackbar, Alert, CircularProgress
+  TextField, Stack, Snackbar, Alert, CircularProgress, Slide
 } from "@mui/material";
 import CreateNewFolderIcon from "@mui/icons-material/CreateNewFolder";
+
+const Transition = forwardRef(function Transition(props, ref) {
+  return <Slide direction="up" ref={ref} {...props} />;
+});
 
 export default function CreatePortfolioButton({ userId = 2, onCreated }) {
   const [open, setOpen] = useState(false);
@@ -11,37 +15,57 @@ export default function CreatePortfolioButton({ userId = 2, onCreated }) {
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState({ open: false, msg: "", severity: "success" });
+  const [nameError, setNameError] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!name.trim()) {
-      setToast({ open: true, msg: "El nombre es obligatorio", severity: "warning" });
+    setNameError("");
+
+    const cleanName = name.trim();
+    const cleanDesc = description.trim();
+    if (!cleanName) {
+      const msg = "Name is required";
+      setNameError(msg);
+      setToast({ open: true, msg, severity: "warning" });
       return;
     }
+
+    setLoading(true);
     try {
-      setLoading(true);
       const res = await fetch("/api/portfolios", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           user_id: Number(userId),
-          name: name.trim(),
-          description: description.trim(),
+          name: cleanName,
+          description: cleanDesc,
         }),
       });
 
-      if (!res.ok) throw new Error(`API ${res.status}`);
+      const data = await res.json().catch(() => ({}));
 
-      // opcional: si tu API devuelve algo más, puedes leerlo:
-      // const json = await res.json();
+      if (!res.ok) {
+        if (res.status === 409) {
+          const msg = data.message || "A portfolio with this name already exists for this user.";
+          setNameError(msg);
+          setToast({ open: true, msg, severity: "error" });
+          return;
+        }
+        const msg = data.error || `HTTP ${res.status}`;
+        setNameError(msg);
+        setToast({ open: true, msg, severity: "error" });
+        return;
+      }
 
-      setToast({ open: true, msg: "Portafolio creado", severity: "success" });
+      setToast({ open: true, msg: "Portfolio created successfully", severity: "success" });
       setOpen(false);
       setName("");
       setDescription("");
-      onCreated?.(); // avisa al padre para refrescar data si es necesario
+      onCreated?.(data);
     } catch (err) {
-      setToast({ open: true, msg: `Error al crear: ${err.message}`, severity: "error" });
+      const msg = err.message || "Unexpected error";
+      setNameError(msg);
+      setToast({ open: true, msg, severity: "error" });
     } finally {
       setLoading(false);
     }
@@ -49,29 +73,48 @@ export default function CreatePortfolioButton({ userId = 2, onCreated }) {
 
   return (
     <>
-      {/* Botón con ícono (puedes cambiar a <Button variant="contained">Crear</Button>) */}
-      <Tooltip title="Crear portafolio">
-        <span>
-          <IconButton color="primary" onClick={() => setOpen(true)}>
-            <CreateNewFolderIcon />
-          </IconButton>
-        </span>
-      </Tooltip>
+      {/* This matches the original look: contained + startIcon + custom colors */}
+      <Button
+        variant="contained"
+        color="secondary"
+        onClick={() => setOpen(true)}
+        startIcon={<CreateNewFolderIcon />}
+        sx={{
+          bgcolor: "#00A199",
+          ":hover": { bgcolor: "#008B83" },
+          transition: "transform 120ms ease, box-shadow 120ms ease, background-color 120ms ease",
+          transform: "translateZ(0)",
+          willChange: "transform",
+          "&:hover": { transform: "translateY(-1px)" },
+          "&:active": { transform: "translateY(0px) scale(0.98)" }
+        }}
+      >
+        Create
+      </Button>
 
-      <Dialog open={open} onClose={() => !loading && setOpen(false)} fullWidth maxWidth="sm">
-        <DialogTitle>Crear portafolio</DialogTitle>
+      <Dialog
+        open={open}
+        onClose={() => !loading && setOpen(false)}
+        fullWidth
+        maxWidth="sm"
+        TransitionComponent={Transition}
+        keepMounted
+      >
+        <DialogTitle>Create portfolio</DialogTitle>
         <form onSubmit={handleSubmit}>
           <DialogContent>
             <Stack spacing={2}>
               <TextField
-                label="Nombre"
+                label="Name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 autoFocus
                 required
+                error={Boolean(nameError)}
+                helperText={nameError || " "}
               />
               <TextField
-                label="Descripción"
+                label="Description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 multiline
@@ -82,16 +125,15 @@ export default function CreatePortfolioButton({ userId = 2, onCreated }) {
                 type="number"
                 value={userId}
                 InputProps={{ readOnly: true }}
-                helperText="Fijado para demo; puedes hacerlo editable si lo necesitas."
               />
             </Stack>
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setOpen(false)} disabled={loading}>
-              Cancelar
+              Cancel
             </Button>
-            <Button type="submit" variant="contained" disabled={loading}>
-              {loading ? <CircularProgress size={22} /> : "Crear"}
+            <Button type="submit" variant="contained" disabled={loading} startIcon={!loading && <CreateNewFolderIcon />}>
+              {loading ? <CircularProgress size={22} /> : "Create"}
             </Button>
           </DialogActions>
         </form>
