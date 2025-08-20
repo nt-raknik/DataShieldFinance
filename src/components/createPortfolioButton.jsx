@@ -17,59 +17,66 @@ export default function CreatePortfolioButton({ userId = 2, onCreated }) {
   const [toast, setToast] = useState({ open: false, msg: "", severity: "success" });
   const [nameError, setNameError] = useState("");
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setNameError("");
+  // In the handleSubmit function, update the success case to properly call onCreated
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setNameError("");
 
-    const cleanName = name.trim();
-    const cleanDesc = description.trim();
-    if (!cleanName) {
-      const msg = "Name is required";
-      setNameError(msg);
-      setToast({ open: true, msg, severity: "warning" });
-      return;
-    }
+  const cleanName = name.trim();
+  const cleanDesc = description.trim();
+  if (!cleanName) {
+    const msg = "Name is required";
+    setNameError(msg);
+    setToast({ open: true, msg, severity: "warning" });
+    return;
+  }
 
-    setLoading(true);
-    try {
-      const res = await fetch("/api/portfolios", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          user_id: Number(userId),
-          name: cleanName,
-          description: cleanDesc,
-        }),
-      });
+  setLoading(true);
+  try {
+    const res = await fetch("/api/portfolios", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        user_id: Number(userId),
+        name: cleanName,
+        description: cleanDesc,
+      }),
+    });
 
-      const data = await res.json().catch(() => ({}));
+    const data = await res.json().catch(() => ({}));
 
-      if (!res.ok) {
-        if (res.status === 409) {
-          const msg = data.message || "A portfolio with this name already exists for this user.";
-          setNameError(msg);
-          setToast({ open: true, msg, severity: "error" });
-          return;
-        }
-        const msg = data.error || `HTTP ${res.status}`;
+    if (!res.ok) {
+      if (res.status === 409) {
+        const msg = data.message || "A portfolio with this name already exists for this user.";
         setNameError(msg);
         setToast({ open: true, msg, severity: "error" });
         return;
       }
-
-      setToast({ open: true, msg: "Portfolio created successfully", severity: "success" });
-      setOpen(false);
-      setName("");
-      setDescription("");
-      onCreated?.(data);
-    } catch (err) {
-      const msg = err.message || "Unexpected error";
+      const msg = data.error || `HTTP ${res.status}`;
       setNameError(msg);
       setToast({ open: true, msg, severity: "error" });
-    } finally {
-      setLoading(false);
+      return;
     }
-  };
+
+    setToast({ open: true, msg: "Portfolio created successfully", severity: "success" });
+    setOpen(false);
+    setName("");
+    setDescription("");
+    
+    // Call onCreated with no arguments to indicate success
+    // This will trigger the parent's fetchPortfolios function
+    onCreated?.();
+  } catch (err) {
+    const msg = err.message || "Unexpected error";
+    setNameError(msg);
+    setToast({ open: true, msg, severity: "error" });
+    
+    // Call onCreated with the error object
+    onCreated?.(err);
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <>
