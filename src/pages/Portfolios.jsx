@@ -7,6 +7,7 @@ import { useEffect, useMemo, useState, useRef } from 'react'
 import { Alert, Box, Button, CircularProgress, Container, Dialog, DialogActions, DialogTitle, DialogContent, Grid, Snackbar, TextField, Typography } from '@mui/material';
 import FolderDeleteIcon from '@mui/icons-material/FolderDelete';
 import CreateNewFolderIcon from '@mui/icons-material/CreateNewFolder';
+import PortfolioHoldings from '../components/PortfolioHoldings.jsx';
 
 import CreatePortfolioButton from "../components/createPortfolioButton";
 
@@ -236,12 +237,31 @@ export default function Portfolios() {
               <Grid container>
               <Grid item xs={12}>
                 <Card>
-                  <CardContent>
+                  {/* <CardContent>
                     {selected ? (
                       <PortfolioTable portfolioId={selected} />
                     ) : (
                       <Typography sx={{ p: 2, textAlign: 'center' }}>
                         Select a portfolio to view the transactions
+                      </Typography>
+                    )}
+                  </CardContent> */}
+                  <CardContent>
+                    {selected ? (
+                      <>
+                        {/* Holdings table now appears first */}
+                        <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>Current Holdings</Typography>
+                        <PortfolioHoldings portfolioId={selected} />
+                        
+                        {/* Transaction History now appears second */}
+                        <Box sx={{ mt: 4 }}>
+                          <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>Transaction History</Typography>
+                          <PortfolioTable portfolioId={selected} />
+                        </Box>
+                      </>
+                    ) : (
+                      <Typography sx={{ p: 2, textAlign: 'center' }}>
+                        Select a portfolio to view the holdings and transactions
                       </Typography>
                     )}
                   </CardContent>

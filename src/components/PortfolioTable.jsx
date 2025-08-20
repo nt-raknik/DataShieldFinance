@@ -63,10 +63,16 @@ export default function PortfolioTable({ portfolioId }) {
   }
 
   return (
-    <TableContainer component={Paper}>
-      <Table size="small" aria-label="portfolio transactions table">
+    <TableContainer 
+      component={Paper}
+      sx={{ 
+        maxHeight: 300, // Set maximum height to enable vertical scrolling
+        overflow: 'auto' // Ensure scrollbars appear when content exceeds dimensions
+      }}
+    >
+      <Table size="small" aria-label="portfolio transactions table" stickyHeader>
         <TableHead>
-          <TableRow>
+          <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
             <TableCell>Date</TableCell>
             <TableCell>Ticker</TableCell>
             <TableCell>Name</TableCell>

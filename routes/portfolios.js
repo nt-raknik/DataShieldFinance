@@ -74,6 +74,48 @@ router.get("/:portfolioId/performance",
   }
 );
 
+router.get("/:portfolioId/holdings", async (req, res) => {
+  try {
+    const [rows] = await pool.query(`
+      SELECT 
+        a.asset_id,
+        a.symbol,
+        a.name,
+        SUM(CASE WHEN t.type = 'buy' THEN t.quantity 
+                WHEN t.type = 'sell' THEN -t.quantity
+                ELSE 0 END) AS quantity,
+        -- Get the latest buy price for the asset
+        (SELECT price FROM transactions 
+         WHERE asset_id = a.asset_id AND portfolio_id = ? AND type = 'buy' 
+         ORDER BY date DESC, transaction_id DESC LIMIT 1) AS price,
+        -- Get the fees from the latest buy transaction
+        (SELECT fees FROM transactions 
+         WHERE asset_id = a.asset_id AND portfolio_id = ? AND type = 'buy' 
+         ORDER BY date DESC, transaction_id DESC LIMIT 1) AS fees
+      FROM 
+        transactions t
+      JOIN 
+        assets a ON t.asset_id = a.asset_id
+      WHERE 
+        t.portfolio_id = ?
+        AND t.type IN ('buy', 'sell')
+      GROUP BY 
+        a.asset_id, a.symbol, a.name
+      HAVING 
+        SUM(CASE WHEN t.type = 'buy' THEN t.quantity 
+                WHEN t.type = 'sell' THEN -t.quantity
+                ELSE 0 END) > 0
+      ORDER BY 
+        a.symbol
+    `, [req.params.portfolioId, req.params.portfolioId, req.params.portfolioId]);
+    
+    res.json(rows);
+  } catch (err) {
+    console.error("Error fetching holdings:", err);
+    res.status(500).json({ error: "Failed to fetch holdings" });
+  }
+});
+
 // Add this to routes/portfolios.js if it doesn't already exist
 router.delete("/user/:userId/portfolio/:portfolioId", async (req, res) => {
   try {
