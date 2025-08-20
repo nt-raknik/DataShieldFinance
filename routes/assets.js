@@ -5,7 +5,7 @@ const { getAssetPerformance } = require("../services/performance");
 const { noticias, marketNews } = require("../services/financial-data-client");
 
 // 2. Consultar assets correspondientes a un portafolio
-router.get("/noticias", async (req, res) => {
+router.get("/noticias", async (req, res,next) => {
 
   //Api de ERik
   //console.log("Pruebas sobre las noticias de Erik");
@@ -15,8 +15,10 @@ router.get("/noticias", async (req, res) => {
 
   //Api de Noel 
   console.log("Pruebas sobre las noticias de Noel");
-  const data = await marketNews("general",{});
-  return res.json(data);
+  try {
+    const news = await financialDataClient.marketNews("general");
+    res.json(news);
+  } catch (err) { next(err); }
 });
 
 // 2. Consultar assets correspondientes a un portafolio
