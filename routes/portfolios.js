@@ -74,4 +74,26 @@ router.get("/:portfolioId/performance",
   }
 );
 
+// Add this to routes/portfolios.js if it doesn't already exist
+router.delete("/user/:userId/portfolio/:portfolioId", async (req, res) => {
+  try {
+    const { userId, portfolioId } = req.params;
+    
+    // Delete the portfolio
+    const result = await pool.query(
+      "DELETE FROM portfolios WHERE user_id = ? AND portfolio_id = ?",
+      [userId, portfolioId]
+    );
+    
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: "Portfolio not found" });
+    }
+    
+    res.json({ success: true, message: "Portfolio deleted successfully" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to delete portfolio" });
+  }
+});
+
 module.exports = router;

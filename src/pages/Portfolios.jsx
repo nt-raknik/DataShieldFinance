@@ -4,10 +4,9 @@ import PortfolioTable from '../components/PortfolioTable'
 import { DUMMY } from '../services/dummy'
 import StocksSidebar from '../components/StocksSidebar'
 import { useEffect, useMemo, useState, useRef } from 'react'
-import { Box, Button, CircularProgress, Container, Dialog, DialogActions, DialogTitle, DialogContent, Grid, Snackbar, TextField, Typography } from '@mui/material';
+import { Alert, Box, Button, CircularProgress, Container, Dialog, DialogActions, DialogTitle, DialogContent, Grid, Snackbar, TextField, Typography } from '@mui/material';
 import FolderDeleteIcon from '@mui/icons-material/FolderDelete';
 import CreateNewFolderIcon from '@mui/icons-material/CreateNewFolder';
-import { red } from '@mui/material/colors';
 
 import CreatePortfolioButton from "../components/createPortfolioButton";
 
@@ -54,6 +53,44 @@ export default function Portfolios() {
       setLoading(false);
     }
   };
+
+
+  const handleDelete = async (portfolioId) => {
+  if (!portfolioId) return;
+  
+  try {
+    console.log(`Attempting to delete portfolio ${portfolioId}`);
+    
+    // Use absolute URL with port 4000
+      const res = await fetch(`/api/portfolios/user/2/portfolio/${portfolioId}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json"
+      }
+    });
+    
+    if (!res.ok) throw new Error(`API ${res.status}`);
+    
+    setToast({ 
+      open: true, 
+      msg: "Portfolio deleted successfully", 
+      severity: "success" 
+    });
+    
+    if (selected === portfolioId) {
+      setSelected(null);
+    }
+    
+    await fetchPortfolios();
+  } catch (err) {
+    console.error("Delete error:", err);
+    setToast({ 
+      open: true, 
+      msg: `Error deleting portfolio: ${err.message}`, 
+      severity: "error" 
+    });
+  }
+};
 
   // Initial load
   useEffect(() => {
@@ -157,27 +194,27 @@ export default function Portfolios() {
         </Grid>
         <Grid item>          
           <Button
-            variant="contained"
-            color="secondary"
-            startIcon={<FolderDeleteIcon />}
-            sx={{
-              bgcolor: "#FA2323",
-              ":hover": { bgcolor: "#CD0404" },
-              transition: "transform 120ms ease, box-shadow 120ms ease, background-color 120ms ease",
-              transform: "translateZ(0)",
-              willChange: "transform",
-              "&:hover": { transform: "translateY(-1px)" },
-              "&:active": { transform: "translateY(0px) scale(0.98)" }
-            }}
-            disabled={!selected}
-            onClick={() => {
-              if (window.confirm('Are you sure you want to delete this portfolio?')) {
-                alert(`Delete portfolio ${selected}`);
-              }
-            }}
-          >
-            Delete
-          </Button>
+  variant="contained"
+  color="secondary"
+  startIcon={<FolderDeleteIcon />}
+  sx={{
+    bgcolor: "#FA2323",
+    ":hover": { bgcolor: "#CD0404" },
+    transition: "transform 120ms ease, box-shadow 120ms ease, background-color 120ms ease",
+    transform: "translateZ(0)",
+    willChange: "transform",
+    "&:hover": { transform: "translateY(-1px)" },
+    "&:active": { transform: "translateY(0px) scale(0.98)" }
+  }}
+  disabled={!selected}
+  onClick={() => {
+    if (window.confirm('Are you sure you want to delete this portfolio?')) {
+      handleDelete(selected);
+    }
+  }}
+>
+  Delete
+</Button>
         </Grid>
       </Grid>
     )}      
@@ -186,7 +223,7 @@ export default function Portfolios() {
           <Card sx={{p:2, bgcolor: "#00674F", color: "#FFFFFF"}}>
             <Grid container spacing={4} justifyContent="center">
               <Grid sx={{borderColor: "blue", border: '2px solid white', display: "flex"}} size={6} justifyContent="center">
-                <Typography sx={{fontWeight: "bold", fontSize: "1.5rem", color: "#BB77FF"}}>My portfolio</Typography>
+                <Typography sx={{fontWeight: "bold", fontSize: "1.5rem", color: "#BB77FF"}}>My history</Typography>
               </Grid>
               <Grid sx={{borderColor: "blue", border: '2px solid white', display: "flex", justifyContent: 'center'}} size={6}>
                   <Button sx={{color: "white", ':hover': {bgcolor: 'blue', color: 'white'}}}>
@@ -204,7 +241,7 @@ export default function Portfolios() {
                       <PortfolioTable portfolioId={selected} />
                     ) : (
                       <Typography sx={{ p: 2, textAlign: 'center' }}>
-                        Select a portfolio to view holdings
+                        Select a portfolio to view the transactions
                       </Typography>
                     )}
                   </CardContent>
@@ -225,7 +262,21 @@ export default function Portfolios() {
         <Grid size={4}>        
           <StocksSidebar />
         </Grid>   
-      </Grid>             
+      </Grid>     
+      <Snackbar
+        open={toast.open}
+        autoHideDuration={6000}
+        onClose={() => setToast(prev => ({ ...prev, open: false }))}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert 
+          onClose={() => setToast(prev => ({ ...prev, open: false }))} 
+          severity={toast.severity}
+          sx={{ width: '100%' }}
+        >
+          {toast.msg}
+        </Alert>
+      </Snackbar>      
     </Container>      
   )
 }

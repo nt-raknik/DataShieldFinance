@@ -12,26 +12,27 @@ import {
 } from '@mui/material';
 
 export default function PortfolioTable({ portfolioId }) {
-  const [holdings, setHoldings] = useState([]);
+  const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     let alive = true;
 
-    const fetchHoldings = async () => {
+    const fetchTransactions = async () => {
       try {
         setLoading(true);
-        const res = await fetch(`/api/assets/${portfolioId}`);
+        // Change the endpoint to fetch transaction data instead of assets
+        const res = await fetch(`/api/transactions/${portfolioId}`);
         if (!res.ok) throw new Error(`API ${res.status}`);
         const data = await res.json();
         if (alive) {
-          setHoldings(Array.isArray(data) ? data : []);
+          setTransactions(Array.isArray(data) ? data : []);
           setError(null);
         }
       } catch (err) {
         if (alive) {
-          setError(err.message || "Error fetching holdings");
+          setError(err.message || "Error fetching transactions");
         }
       } finally {
         if (alive) {
@@ -41,7 +42,7 @@ export default function PortfolioTable({ portfolioId }) {
     };
 
     if (portfolioId) {
-      fetchHoldings();
+      fetchTransactions();
     }
 
     return () => { alive = false; };
@@ -63,32 +64,38 @@ export default function PortfolioTable({ portfolioId }) {
 
   return (
     <TableContainer component={Paper}>
-      <Table size="small" aria-label="portfolio holdings table">
+      <Table size="small" aria-label="portfolio transactions table">
         <TableHead>
           <TableRow>
+            <TableCell>Date</TableCell>
             <TableCell>Ticker</TableCell>
+            <TableCell>Name</TableCell>
             <TableCell>Type</TableCell>
-            <TableCell align="right">Amount</TableCell>
-            <TableCell align="right">Avg. price</TableCell>
+            <TableCell align="right">Quantity</TableCell>
+            <TableCell align="right">Price</TableCell>
+            <TableCell align="right">Fees</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
-          {holdings.length === 0 ? (
+          {transactions.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={4} align="center">No holdings found</TableCell>
+              <TableCell colSpan={7} align="center">No transactions found</TableCell>
             </TableRow>
           ) : (
-            holdings.map((h) => (
+            transactions.map((tx) => (
               <TableRow
-                key={h.holding_id}
+                key={tx.transaction_id}
                 sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
               >
+                <TableCell>{new Date(tx.date).toLocaleDateString()}</TableCell>
                 <TableCell component="th" scope="row" sx={{ fontWeight: 'medium' }}>
-                  {h.ticker}
+                  {tx.symbol}
                 </TableCell>
-                <TableCell>{h.type}</TableCell>
-                <TableCell align="right">{h.quantity}</TableCell>
-                <TableCell align="right">{h.avg_price ?? '-'}</TableCell>
+                <TableCell>{tx.name}</TableCell>
+                <TableCell>{tx.type}</TableCell>
+                <TableCell align="right">{tx.quantity}</TableCell>
+                <TableCell align="right">${Number(tx.price).toFixed(2)}</TableCell>
+                <TableCell align="right">${Number(tx.fees).toFixed(2)}</TableCell>
               </TableRow>
             ))
           )}
