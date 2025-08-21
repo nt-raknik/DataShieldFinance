@@ -65,7 +65,7 @@ export default function PortfolioHoldings({ portfolioId }) {
 
   return (
     <>
-      <Typography variant="h6" sx={{ mt: 4, mb: 2, fontWeight: 'bold' }}>Current Holdings</Typography>
+      {/*<Typography variant="h6" sx={{ mt: 4, mb: 2, fontWeight: 'bold' }}>Current Holdings</Typography>*/}
       <TableContainer 
       component={Paper}
       sx={{ 
