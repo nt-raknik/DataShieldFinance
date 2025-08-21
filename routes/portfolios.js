@@ -138,4 +138,80 @@ router.delete("/user/:userId/portfolio/:portfolioId", async (req, res) => {
   }
 });
 
+// GET /portfolios/:portfolioId/holdings/value-breakdown
+// Devuelve: total_value_usd y cada holding con value_usd y weight (%)
+router.get("/:portfolioId/holdings/value-breakdown", async (req, res, next) => {
+  try {
+    const { portfolioId } = req.params;
+
+    // Cantidad neta (compras - ventas) + último precio de compra para cada asset
+    const [rows] = await pool.query(
+      `
+      SELECT 
+        a.asset_id,
+        a.symbol,
+        a.name,
+        -- Cantidad neta
+        SUM(CASE 
+              WHEN t.type = 'buy'  THEN t.quantity
+              WHEN t.type = 'sell' THEN -t.quantity
+              ELSE 0 
+            END) AS quantity,
+        -- Último precio de compra para estimar valor (puedes sustituir por precio de mercado)
+        (
+          SELECT tt.price 
+          FROM transactions tt
+          WHERE tt.asset_id = a.asset_id 
+            AND tt.portfolio_id = ? 
+            AND tt.type = 'buy'
+          ORDER BY tt.date DESC, tt.transaction_id DESC
+          LIMIT 1
+        ) AS last_buy_price
+      FROM transactions t
+      JOIN assets a ON t.asset_id = a.asset_id
+      WHERE 
+        t.portfolio_id = ?
+        AND t.type IN ('buy','sell')
+      GROUP BY a.asset_id, a.symbol, a.name
+      HAVING SUM(CASE WHEN t.type = 'buy' THEN t.quantity 
+                      WHEN t.type = 'sell' THEN -t.quantity 
+                      ELSE 0 END) > 0
+      ORDER BY a.symbol
+      `,
+      [portfolioId, portfolioId]
+    );
+
+    // Calcular valor y pesos
+    const enriched = rows.map(r => {
+      const qty   = Number(r.quantity ?? 0);
+      const price = Number(r.last_buy_price ?? 0);
+      const value = qty * price;  // << usa último precio de compra (sustituible por precio de mercado)
+      return {
+        asset_id: r.asset_id,
+        symbol: r.symbol,
+        name: r.name,
+        quantity: qty,
+        price_usd: price,
+        value_usd: value
+      };
+    });
+
+    const totalValue = enriched.reduce((acc, x) => acc + (x.value_usd || 0), 0);
+    const withWeights = enriched.map(x => ({
+      ...x,
+      weight: totalValue > 0 ? (x.value_usd / totalValue) * 100 : 0
+    }));
+
+    res.json({
+      portfolio_id: Number(portfolioId),
+      total_value_usd: totalValue,
+      holdings: withWeights
+    });
+  } catch (err) {
+    console.error("Error in value-breakdown:", err);
+    next(err);
+  }
+});
+
+
 module.exports = router;
