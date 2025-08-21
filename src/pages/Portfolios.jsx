@@ -366,41 +366,51 @@ export default function Portfolios() {
               </Tooltip>
 
               <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexShrink: 0 }}>
-                <CreateAssetButton
-                  onCreated={() => setToast({ open: true, msg: "Asset created", severity: "success" })}
-                  buttonProps={{
-                    variant: "text",
-                    size: isMobile ? "small" : "medium",
-                    sx: {
-                      color: "white",
-                      ":hover": { bgcolor: "blue", color: "white" },
-                      transition: "transform 120ms ease, background-color 120ms ease",
-                      transform: "translateZ(0)",
-                      willChange: "transform",
-                      "&:hover": { transform: "translateY(-1px)" },
-                      "&:active": { transform: "translateY(0px) scale(0.98)" },
-                    },
-                    children: <CreateNewFolderIcon fontSize={isMobile ? "small" : "medium"} />,
-                  }}
-                />
-                <DeleteAssetButton
-                  portfolioId={selected}
-                  onDeleted={() => setToast({ open: true, msg: "Asset deleted", severity: "success" })}
-                  buttonProps={{
-                    variant: "text",
-                    size: isMobile ? "small" : "medium",
-                    sx: {
-                      color: "red",
-                      ":hover": { bgcolor: "red", color: "white" },
-                      transition: "transform 120ms ease, background-color 120ms ease",
-                      transform: "translateZ(0)",
-                      willChange: "transform",
-                      "&:hover": { transform: "translateY(-1px)" },
-                      "&:active": { transform: "translateY(0px) scale(0.98)" },
-                    },
-                    children: <FolderDeleteIcon fontSize={isMobile ? "small" : "medium"} />,
-                  }}
-                />
+              <CreateAssetButton
+                portfolioId={selected}
+                onCreated={() => {
+                  setToast({ open: true, msg: "Compra registrada", severity: "success" });
+                  // refresca holdings/tabla si quieres:
+                  // fetchHoldingsValueBreakdown(selected);
+                  // (y si tu PortfolioHoldings/PortfolioTable dependen de API, se actualizarán solos o puedes forzarlo)
+                }}
+                buttonProps={{
+                  variant: "text",
+                  size: isMobile ? "small" : "medium",
+                  sx: {
+                    color: "white",
+                    ":hover": { bgcolor: "blue", color: "white" },
+                    transition: "transform 120ms ease, background-color 120ms ease",
+                    transform: "translateZ(0)",
+                    willChange: "transform",
+                    "&:hover": { transform: "translateY(-1px)" },
+                    "&:active": { transform: "translateY(0px) scale(0.98)" },
+                  },
+                }}
+              >
+                <CreateNewFolderIcon fontSize={isMobile ? "small" : "medium"} />
+              </CreateAssetButton>
+
+              <DeleteAssetButton
+                portfolioId={selected}
+                onDeleted={() => setToast({ open: true, msg: "Asset sold", severity: "success" })}
+                buttonProps={{
+                  variant: "text",
+                  size: isMobile ? "small" : "medium",
+                  sx: {
+                    color: "red",
+                    ":hover": { bgcolor: "red", color: "white" },
+                    transition: "transform 120ms ease, background-color 120ms ease",
+                    transform: "translateZ(0)",
+                    willChange: "transform",
+                    "&:hover": { transform: "translateY(-1px)" },
+                    "&:active": { transform: "translateY(0px) scale(0.98)" },
+                  },
+                }}
+              >
+                <FolderDeleteIcon fontSize={isMobile ? "small" : "medium"} />
+              </DeleteAssetButton>
+
               </Box>
             </Box>
 
